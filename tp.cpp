@@ -20,7 +20,7 @@ int jambotubos(int R, int n, vector<tuple<int,int>> s, int j) {
 	if (R>0) {
 		sol_parcial[j] = 1;
 		productos++;
-		peso_parcial[j] += s[j].first(); 
+		//peso_parcial[j] += s[j].first(); 
 		if (productos == maxProd(R,j)){
 			return;
 		} else { //tendria que mirar mas adelante
@@ -57,4 +57,44 @@ int minResist(vector<int> sol, int j){
 	for (int i = 0; i<j ; i++){
 		if (sol[i] == 1)
 	} 
+}
+
+int maxProd_fb(int i, int r, int m, std::vector<tuple<int,int>>& S) {
+	if (i == -1) {
+		if (r >= 0 && m >= 0) return 0;
+		else return std::numeric_limits<int>::min();
+	}
+		// agregar a sol parcial y despues sacarlo
+	if (S[i].second() < m) {
+		return std::max(1 + maxProd_fb(i - 1, r - S[i].first(), S[i].second()), maxProd_fb(i - 1, r, m));
+	}
+	return std::max(1 + maxProd_fb(i - 1, r - S[i].first(), m - S[i].first()), maxProd_fb(i - 1, r, m));
+}
+
+
+
+fread(FILE, )
+
+
+vector<int> reconstruir(int i, int r) {
+	if (i == -1) return std::vector<int>();
+
+	if (maxProd_fb(i, r) == maxProd_fb(i - 1, r)) {
+		return reconstruir(i - 1, r);
+	reconstruir(i - 1, r - S[i].first())[i](i); 
+}
+
+
+void jt() {
+	productos = 0;
+
+	for (int i = 0; i < S.size(); i++) {
+		sol_parcial[i] = true;
+		productos++;
+
+		if (productos != maxProd_fb(i, r)) {
+			sol_parcial[i] = false;
+			productos--;
+		}
+	}
 }
