@@ -59,16 +59,17 @@ int minResist(vector<int> sol, int j){
 	} 
 }
 
-int maxProd_fb(int i, int r, int m, std::vector<tuple<int,int>>& S) {
-	if (i == -1) {
+
+int jt_fb(int i, int r, int m, std::vector<tuple<int,int>>& S) {
+	if (i == 0) {
 		if (r >= 0 && m >= 0) return 0;
 		else return std::numeric_limits<int>::min();
 	}
 		// agregar a sol parcial y despues sacarlo
 	if (S[i].second() < m) {
-		return std::max(1 + maxProd_fb(i - 1, r - S[i].first(), S[i].second()), maxProd_fb(i - 1, r, m));
+		return std::max(1 + jt_fb(i - 1, r - S[i].first(), S[i -1].second()), jt_fb(i - 1, r, m));
 	}
-	return std::max(1 + maxProd_fb(i - 1, r - S[i].first(), m - S[i].first()), maxProd_fb(i - 1, r, m));
+	return std::max(1 + jt_fb(i - 1, r - S[i].first(), m - S[i - 1].first()), jt_fb(i - 1, r, m));
 }
 
 
