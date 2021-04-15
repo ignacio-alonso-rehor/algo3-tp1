@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <chrono>
+#include <string>
 
 #include "types.h"
 #include "solver.h"
@@ -33,32 +34,37 @@ int main(int argc, char** argv) {
 	}
 
 	std::vector<pair> S;
-	int R;
+	int R, n;
+	std::string alg = argv[1]; 
 
-	if (read_vector(S, R, argv[1]) != 0) {
+	if (read_vector(S, R, argv[2]) != 0) {
 		std::cerr << "Error al abrir el archivo\n";
 		return EXIT_FAILURE;
 	}
 
-	/*
-	for (pair p : S) {
-		std::cout << '(' << p.first << ", " << p.second << ")\n";
-	}
-	*/
+	n = S.size();
+	// for (pair p : S) {
+	// 	std::cout << '(' << p.first << ", " << p.second << ")\n";
+	// }
+	
+
+
+	int res = 0;
 
 	auto start = std::chrono::steady_clock::now();
 
-	int res = jt_bf(S.size(), R, std::numeric_limits<int>::max(), S);
-	
-	// switch (argv[2]) {
-	// 	case "bf":
-	// 		break;
-	// 	case "bt":
-	// 		break;
-	// 	case "dp":
-	// 		break;
-	// }
+	if (alg.compare("BF") == 0)
+		res = jt_bf(n, R, std::numeric_limits<int>::max(), S);
+	else if (alg.compare("BT") == 0)
+		res = jt_bt(n, R, std::numeric_limits<int>::max(), 0, S);
+	else if (alg.compare("DP") == 0) {
+		matrix memo;
 
+		for (int i = 0; i < n + 1; ++i)
+			memo.emplace_back(R + 1, -1);
+
+		res = jt_dp(n, R, S, memo);
+	}
 	auto end = std::chrono::steady_clock::now();
 	double total_time = std::chrono::duration<double, std::milli>(end - start).count();
 
