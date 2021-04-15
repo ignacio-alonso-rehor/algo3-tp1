@@ -4,6 +4,6 @@
 #include <tuple>
 
 typedef std::pair<int, int> pair;
-
+typedef std::vector<std::vector<int>> matrix;
 
 #endif /* TYPES_H_ */
