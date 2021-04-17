@@ -12,6 +12,6 @@ int jt_bf(int, int, int, std::vector<pair>&);
 // Complejidad: O(2^n)
 int jt_bt(int i, int r, int min_r, int k, std::vector<pair>& S);
 
-int jt_dp(int i, int m, std::vector<pair>& S, matrix& memo);
+int jt_dp(int i, int n, int m, std::vector<pair>& S, matrix& memo);
 
 #endif /* SOLVER_H_ */
