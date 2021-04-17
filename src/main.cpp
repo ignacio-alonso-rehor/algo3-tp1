@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 		for (int i = 0; i < n + 1; ++i)
 			memo.emplace_back(R + 1, -1);
 
-		res = jt_dp(n, R, S, memo);
+		res = jt_dp(0, n, R, S, memo);
 	}
 	auto end = std::chrono::steady_clock::now();
 	double total_time = std::chrono::duration<double, std::milli>(end - start).count();
