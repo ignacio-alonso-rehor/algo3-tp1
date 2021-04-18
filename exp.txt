@@ -1,0 +1,25 @@
+FB
+==
+    . Lo único que afecta el tiempo de ejecución es la cantidad de elementos de
+    S.
+
+- BT
+    . Factibilidad:
+        - Mejor caso: Todos los productos tienen peso mayor a R, la resistencia
+        del tubo.
+        - Peor caso: Todos los productos se pueden meter sin romperse asi mismos,
+        ni al tubo.
+    . Optimalidad:
+        - Mejor caso:
+
+- PD
+    . Mejor caso: Superposición de problemas. Por ejemplo, el producto 1 y el 2
+    tienen el mismo peso.
+    . Peor caso: No hay tanta superposición, todos pesos y sus combinaciones dan
+    instancias distintas. Por ejemplo, pesos potencias de 2.
+
+    (1, 2, 4, 8, 16) = a
+
+
+Preguntas:
+    - Orden de ejecucion para evaluar poda por optimalidad.
