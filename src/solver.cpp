@@ -82,11 +82,7 @@ int jt_bt(int i, int r, int count, std::vector<pair>& S) {
 	return std::max(1 + jt_bt(i+1, min, count+1, S), jt_bt(i+1, r, count, S));
 }
 
-int jt_dp(int i, int n, int m, std::vector<pair>& S, matrix& memo) {
-
-	std::cout << '(' << i << ", " << m << ") ";
-
-
+int jt_dp(int i, int n, int m, std::vector<pair>& S, matrix& memo){
 	if (m < 0) return std::numeric_limits<int>::min(); 
 
 	if (memo[i][m] == -1) {
@@ -95,10 +91,8 @@ int jt_dp(int i, int n, int m, std::vector<pair>& S, matrix& memo) {
 
 		else {
 			int min = std::min(m - S[i+1].first, S[i + 1].second);
-			std::cout << "min: " << min << '\n';
 			memo[i][m] = std::max(1 + jt_dp(i + 1, n, min, S, memo), jt_dp(i + 1, n, m, S, memo));
 		}
-			
 	}
 		return memo[i][m];
 }
