@@ -54,9 +54,9 @@ int main(int argc, char** argv) {
 	auto start = std::chrono::steady_clock::now();
 
 	if (alg.compare("BF") == 0)
-		res = jt_bf(n, R, std::numeric_limits<int>::max(), S);
+		res = jt_bf(0, R, S);
 	else if (alg.compare("BT") == 0)
-		res = jt_bt(n, R, std::numeric_limits<int>::max(), 0, S);
+		res = jt_bt(0, R, 0, S);
 	else if (alg.compare("DP") == 0) {
 		matrix memo;
 
