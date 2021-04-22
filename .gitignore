@@ -2,5 +2,10 @@ obj/
 
 src/input/*
 !src/input/ejemplo
+src/jt
+
+exp/instancias/*
+exp/resultados/*
+exp/.ipynb_checkpoints
 
 tp1_ejemplo/
