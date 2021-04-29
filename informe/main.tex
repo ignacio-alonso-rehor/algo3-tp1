@@ -1,0 +1,530 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{a4wide}
+\usepackage{caratula}
+
+% Comandos para simbolos matematicos.
+\usepackage{amsmath, amssymb, tabularx, dsfont, mathtools, amsfonts}
+
+% Comandos para referencias
+\usepackage{natbib}
+
+% Comandos para Figuras, Graficos, Tikz etc.
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{pgfplots}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{svg}
+\setsvg{inkscapeexe=inkscape inscapeopt=-z -D}
+
+% Comandos para algoritmos.
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\algnewcommand{\IfThenElse}[3]{% \IfThenElse{<if>}{<then>}{<else>}
+\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}
+\algnewcommand{\IfThen}[2]{% \IfThenElse{<if>}{<then>}
+  \State \algorithmicif\ #1\ \algorithmicthen\ #2}
+\pgfplotsset{compat=1.16}
+
+\usepackage{tasks}
+
+% FORMATO
+
+% Formato de párrafos
+\setlength{\parskip}{0.5em}
+
+% Formato de páginas
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ - #1}}
+
+\fancyhf{}
+
+\fancyhead[LO]{Sección \rightmark} % \thesection\ 
+\fancyfoot[LO]{\small{Jerónimo Dacunda Ratti, Ignacio Alonso Rehor}}
+\fancyfoot[RO]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+\setlength{\hoffset}{-0.8in}
+\setlength{\textwidth}{18.5cm}
+\setlength{\headsep}{0.5cm}
+\setlength{\textheight}{25cm}
+\setlength{\voffset}{-0.7in}
+\setlength{\headwidth}{\textwidth}
+\setlength{\headheight}{13.1pt}
+
+\renewcommand{\baselinestretch}{1.1}  % line spacing
+
+%===========================================================================================%
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+\DeclarePairedDelimiter\curl{\{}{\}}
+\DeclarePairedDelimiter\bigcurl{\Big\{}{\Big\}}
+
+%% Conjuntos - blackboard bold
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Rn}[1]{\mathbb{R}^{#1}}
+
+%% Operaciones sobre conjuntos
+
+\newcommand{\interior}[1]{#1^{\mathrm{o}}}
+
+%% Pertenece
+\newcommand{\inN}[1]{#1 \in \N}
+\newcommand{\inZ}[1]{#1 \in \Z}
+\newcommand{\inR}[1]{#1 \in \R}
+\newcommand{\inC}[1]{#1 \in \C}
+
+%% Sucesiones
+\newcommand{\seq}[2]{\curl{#1_{#2}}_{\inN{#2}}}
+\newcommand{\sqe}[4]{\curl{#1_{#2}}_{#3 \leq #2 \leq #4}}
+%===========================================================================================%
+
+\newcommand{\fb}{Fuerza Bruta}
+\newcommand{\pd}{Programación Dinámica}
+\newcommand{\bt}{Backtracking}
+\newcommand{\Res}{\mathcal{R}}
+
+\newcommand{\dfb}{\textbf{fuerza-bruta}}
+\newcommand{\das}{\textbf{alta-superposición}}
+\newcommand{\dss}{\textbf{sin-superposición}}
+
+\begin{document}
+
+\titulo{TP 1: Optimizando Jambo-tubos}
+
+\fecha{2021-1C}
+
+\materia{Algoritmos y estructuras de datos III}
+
+\integrante{Dacunda Ratti, Jerónimo}{710/18}{jero.d.r22@gmail.com}
+\integrante{Alonso Rehor, Ignacio}{195/18}{arehor.ignacio@gmail.com}
+
+\maketitle
+
+\newpage
+\setcounter{page}{1}
+
+\section{Introducción} \label{sec:introduccion}
+La cadena de supermercados Jambo desea ofrecer un sistema de empacado que reemplace a las bolsas plásticas por los denominados Jambo-tubos. Dicho sistema consiste de un robot que recibe los productos uno a uno por medio de una cinta transportadora, y para cada producto debe decidir si lo agrega o no al tubo. Los productos agregados al tubo se van apilando uno encima de otro. Su objetivo es, conociendo el peso y la resistencia de cada producto (es decir, el peso que puede soportar), el de introducir en el tubo la cantidad máxima de productos, sin aplastar ninguno de los productos previamente colocados y sin que se rompa el tubo. Formalmente, sea $\sqe{s}{k}{1}{n}$ una sucesión de $n \geq 0$ productos, con $s_{k} =  (w_{k}, r_{k})$ donde $w$ es el peso del producto y $r$ su resistencia. Dado un \textbf{Jambo-tubo} de resistencia $\Res \in \mathbb{N}$, el problema consiste en hallar la longitud de la  mayor subsucesión $\sqe{s}{k_{r}}{1}{n'} \subseteq \curl{s_{k}}$ tal que
+
+\[
+    \sum_{r = 1}^{n'}{s_{k_{r}}}(0) = \sum_{s_{i} \in \curl{s_{k_{r}}} }{w_{i}} \leq \Res. 
+\]
+Y también tiene que ser
+\[
+    \sum_{i = m}^{n'}{w_{k_{i}}} \leq r_{k_{j}}, \quad \text{para todo } 1 \leq j < m \leq n',
+\]
+es decir que los productos no se pueden romper entre si.
+
+A continuación se exhiben algunos ejemplos con sus correspondientes respuestas esperadas. Sea
+\[
+    s_{k} = (10,45),(20,8),(30,15),(10,2),(15,30),
+\]
+y $\Res=50$, entonces existen $n+1=6$ respuestas posibles provenientes de $2^5$ soluciones, de las cuales $13$ son factibles, como por ejemplo: $s^{1}_{k}=s_1,s_2$ ; $s^{2}_{k}=s_1,s_3,s_4$ ; $s^{3}_k=s_2$ ; y $s^{4}_{k} = ()$. La de mayor longitud es $s^{2}_{k}$, siendo $\abs{s^{2}_{k}}=3$, y no existe ninguna solución factible que incluya más elementos, por lo tanto la respuesta en este caso es $3$. Notar, por ejemplo, que si se agrega el producto $s_2$ al tubo, no se puede agregar ningún producto de los subsiguientes dado que todos poseen un peso mayor a $r_2$. Por otra parte, dada la misma secuencia $\curl{s_{k}}$ y una resistencia $\Res=9$, cualquier producto que se agregue rompería el tubo, por lo tanto la respuesta es $0$.
+
+El objetivo de este trabajo es abordar el problema de optimización de Jambo-tubos utilizando tres técnicas de programación distintas y evaluar la efectividad de cada una de ellas para diferentes conjuntos de instancias. En primer lugar se utiliza \emph{fuerza bruta} (FB o BF) que consiste en enumerar todas las posibles soluciones, de manera recursiva, buscando aquellas que son factibles. Luego, se introducen podas para reducir el número de nodos de este árbol recursivo en busca de un algoritmo más eficiente, obteniendo un algoritmo de \emph{backtracking} (BT). La ultima técnica que vamos a abordar consiste en utilizar una estructura para almacenar resultados de subproblemas previamente calculados. A este proceso se lo conoce como \emph{memoización} y a esta técnica como \emph{programación dinámica} (PD o DP).
+
+En las siguientes secciones vamos a abordar cada una de las técnicas con más detalle. 
+
+El trabajo va a estar ordenado de la siguiente manera: primero en la Sección~\ref{sec:fuerza_bruta} se define el algoritmo recursivo de Fuerza Bruta para recorrer todo el conjunto de soluciones y se analiza su complejidad. Más tarde, en la Sección~\ref{sec:backtracking} se explica el algoritmo de Backtracking con un breve análisis de mejores y peores casos. Luego, se introduce el algoritmo de DP en la Sección~\ref{sec:dp} junto con la demostración correspondiente de correctitud y un análisis de complejidad. Finalmente, en la Sección~\ref{sec:experimentacion} se presentan los experimentos computacionales con sus respectiva discusión, y las conclusiones finales se encuentran en la Sección~\ref{sec:conclusiones}.
+
+\section{Fuerza Bruta} \label{sec:fuerza_bruta}
+Un algoritmo de Fuerza Bruta enumera todo el conjunto de soluciones en búsqueda de aquellas factibles u óptimas según si el problema es de decisión u optimización. En este caso, el conjunto de soluciones está compuesto por todas las subsucesiones de $s_k$.
+
+Por ejemplo, si $s_{k}=(10,5),(8,10),(7,20)$ y $\Res=30$, las soluciones posibles son 
+
+\begin{tasks}(3)
+    \task $()$ \label{fact1}
+    \task $(10,5)$ \label{fact2}
+    \task $(8,10)$ \label{fact3}
+    \task $(7,20)$ \label{fact4}
+    \task $(10,5),(8,10)$
+    \task $(10,5),(7,20)$
+    \task $(8,10),(7,20)$ \label{fact5}
+    \task $(10,5),(8,10),(7,20)$
+\end{tasks}
+
+De las cuales \ref{fact1}, \ref{fact2}, \ref{fact3}, \ref{fact4} y  \ref{fact5} son factibles. Dentro de las factibles, la de mayor longitud es \ref{fact5} por lo tanto la respuesta es $2$.
+
+La idea del Algoritmo~\ref{alg:fuerza_bruta} para resolver el Jambo-tubo es ir generando las soluciones de manera recursiva decidiendo en cada paso si un elemento de $\curl{s_{k}}$ es considerado o no y quedándose con la mejor solución de alguna de las dos ramas. Finalmente, al identificar una solución, determinar si es factible y de ser así, devolver el cardinal de esa solución.
+
+En la Figura~\ref{fig:ejemplo_fuerza_bruta} se ve un ejemplo del árbol de recursión para la instancia $s_{k} =(10,5),(8,10),(7,20)$ y $\Res=30$. Cada nodo intermedio del árbol representa una \emph{solución parcial}, es decir, cuando aún no se tomaron todas las decisiones de qué elementos incluir, mientras que las hojas representan a todas las soluciones (8 en este caso). La solución óptima  está marcada en rojo y las otras soluciones factibles en gris. Notar que la solución al problema original es exactamente \texttt{jt\_fb(0,$\Res,\curl{s_{k}}$)}.
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\Function{jt\_fb}{$i$, $r$, $S$}
+    \If{$i = n$} \label{alg:fb-if}
+        \IfThenElse{$r \geq 0$}{\textbf{return} $0$}{\textbf{return} $-\infty$} \label{alg:fb-cb}
+    \EndIf
+    \State $min \gets \min(r-w_i, r_i)$ \label{alg:fb-min}
+    \State \textbf{return} $\max \{ 1 + \textsc{jt\_fb}(i+1, min, S),\ \textsc{jt\_fb}(i+1, r, S) \}$.
+\EndFunction
+\Statex \underline{Observación:} se hace referencia $w_i$ y $r_i$ como el primer y segundo componente, respectivamente, de la tupla $s_i \in S$.  
+\end{algorithmic}
+\caption{Resolución de Jambo-tubo por Fuerza Bruta}
+\label{alg:fuerza_bruta}
+
+\end{algorithm}
+
+La correctitud del algoritmo se basa en el hecho de que se generan todas las posibles soluciones, dado que para cada elemento de $\curl{s_k}$ se obtienen dos ramas, una considerándolo en el conjunto y la otra dejándolo de lado. Al haber generado todas las posibles soluciones, debe encontrarse la óptima, es decir la mejor de todas ellas.
+
+La complejidad del Algoritmo~\ref{alg:fuerza_bruta} para el peor caso es $O(2^n)$. Esto es así, porque el árbol de recursión es un árbol binario completo de $n+1$ niveles (contando la raíz), dado que cada nodo se ramifica en dos hijos y en cada paso el parámetro $i$ es incrementado en 1 hasta llegar a $n$. Además, es importante observar que la solución de cada llamado recursivo toma tiempo constante dado que las lineas \ref{alg:fb-if}, \ref{alg:fb-cb}, y \ref{alg:fb-min} solamente hacen operaciones elementales como restas, mínimos y comparaciones. Como corolario, se puede concluir que el algoritmo se comporta de igual manera frente a todos los tipos de instancia, dado que siempre genera el mismo número de nodos. Dicho de otro modo, el conjunto de instancias de peor caso es igual al conjunto de instancias de mejor caso. 
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.4]
+    \centering
+        % Arcos
+        \draw[color=black, -] (11, 6) -- node[above] {$\cup \emptyset$} (5, 4);
+        \draw[color=black, -] (11, 6) -- node[above] {$\cup \{s_1\}$} (17, 4);
+        
+        \draw[color=black, -] (5, 4) -- node[above left] {$\cup \emptyset$} (2, 2);
+        \draw[color=black, -] (5, 4) -- node[above right] {$\cup \{s_2\}$} (8, 2);
+        \draw[color=black, -] (17, 4) -- node[above left] {$\cup \emptyset$} (14, 2);
+        \draw[color=black, -] (17, 4) -- node[above right] {$\cup \{s_2\}$} (20, 2);
+        
+        \draw[color=black, -] (2, 2) -- node[left] {$\cup \emptyset$} (0, 0);
+        \draw[color=black, -] (2, 2) -- node[right] {$\cup \{s_3\}$} (4, 0);
+        \draw[color=black, -] (8, 2) -- node[left] {$\cup \emptyset$} (6, 0);
+        \draw[color=black, -] (8, 2) -- node[right] {$\cup \{s_3\}$} (10, 0);
+        \draw[color=black, -] (14, 2) -- node[left] {$\cup \emptyset$} (12, 0);
+        \draw[color=black, -] (14, 2) -- node[right] {$\cup \{s_3\}$} (16, 0);
+        \draw[color=black, -] (20, 2) -- node[left] {$\cup \emptyset$} (18, 0);
+        \draw[color=black, -] (20, 2) -- node[right] {$\cup \{s_3\}$} (22, 0);
+        
+        % Vertices
+        \path (0,0) node[circle,draw,fill=gray](A){};
+        \path (4,0) node[circle,draw,fill=gray](B){};
+        \path (6,0) node[circle,draw,fill=gray](C){};
+        \path (10,0) node[circle,draw,fill=red](D){};
+        \path (12,0) node[circle,draw,fill=gray](E){};
+        \path (16,0) node[circle,draw,fill=white](F){};
+        \path (18,0) node[circle,draw,fill=white](G){};
+        \path (22,0) node[circle,draw,fill=white](H){};
+        
+        \path (2,2) node[circle,draw,fill=white](I){};
+        \path (8,2) node[circle,draw,fill=white](J){};
+        \path (14,2) node[circle,draw,fill=white](K){};
+        \path (20,2) node[circle,draw,fill=white](L){};
+        
+        \path (5,4) node[circle,draw,fill=white](M){};
+        \path (17,4) node[circle,draw,fill=white](N){};
+        
+        \path (11,6) node[circle,draw,fill=white](O){};
+    
+    \end{tikzpicture}
+    \caption{Ejemplo de ejecución del Algoritmo~\ref{alg:fuerza_bruta} para $s_{k} = (10,5),(8,10),(7,20)$ y $\Res=30$.\\En rojo la solución óptima $s^{opt}=(8,10),(7,20)$ y en gris las otras soluciones factibles.}
+    \label{fig:ejemplo_fuerza_bruta}
+\end{figure}
+
+\section{Backtracking} \label{sec:backtracking}
+Los algoritmos de Backtracking siguen una idea similar a Fuerza Bruta pero con algunas consideraciones especiales. En esencia, se enumeran todas las soluciones formando un \emph{árbol de backtracking} de manera similar a Fuerza Bruta, donde en cada nodo se generan todas las posibles decisiones locales y se mantiene la mejor solución hallada con alguna de ellas. La diferencia radica en las denominadas \emph{podas} que son reglas que permiten evitar explorar partes del árbol en las que se \emph{sabe} que no va a existir ninguna solución de interés. Generalmente estas podas dependen de cada problema en particular, pero las más comunes suelen dividirse en dos categorías: \emph{factibilidad} y \emph{optimalidad}.
+
+Antes de explicar las diferentes podas, hay que establecer ciertas definiciones: Sea $\curl{s_{k}}$ la sucesión de productos de problema, decimos que una subsucesión $\curl{s_{k_{r}}} \subseteq \curl{s_{k}}$ es una \emph{solución parcial} del problema de Jambo-Tubos si esta se puede \emph{extender} a una solución candidata, donde extender significa considerar productos todavía no vistos. Al intentar formalizar esta definición, una primera idea podría ser definir el conjunto de soluciones parciales como toda subsucesión de $\curl{s_{k}}$ tal que su cardinal sea menor a $n$, la cantidad de productos presentes en $\curl{s_{k}}$. No obstante, esta definición implica que toda solución candidata del problema tiene todos los productos, y por lo tanto esta definición no es correcta. Para solucionar esta ambigüedad vamos codificar una solución parcial como un vector $v \in \Rn{m}$ con $m < n$, dado por
+\[
+    v = (a_{1}, \hdots, a_{m}), \quad \text{con } a_{i} \in \curl{1, 0}.
+\]
+Donde
+\[
+    a_{i} = \begin{cases}
+        1 \quad &\text{si $s_{i}$ pertenece a la solución parcial,} \\
+        0 \quad &\text{si $s_{i}$ no pertenece a la solución parcial.} \\
+    \end{cases}
+\]
+De esta manera podemos describir inequívocamente las posibles soluciones parciales (y candidatas) del problema. Notemos que, bajo esta codificación, un vector $v\in\Rn{m}$ representa una solución candidata si y solo si $m = n$.
+\paragraph{Poda por factibilidad}
+En este caso, una poda por factibilidad es la siguiente. Sea $v\in\Rn{m}$ la codificación de una solución parcial, y sea $r$ la \emph{resistencia mínima parcial} dada por
+\[
+    r = \min\bigcurl{\Res{} - \sum_{i = 1}^{m}{a_{i}w_{i}},\
+        \min\bigcurl{r_{j} - \sum_{i = j + 1}^{m}{a_{i}w_{i}}\ : \ 1 \leq j \leq m \ \wedge \ a_{j} = 1}}.
+%    r = \min(\Res - \sum_{s_{i} \in \curl{s'_{k}}} w_i, \ \min(\{r_{j} \in S':1\leq j < i\})- \sum_{s_i' \in S'} w_i).
+\]
+Es decir, $r$ es el valor máximo que puede tomar el peso del próximo producto a agregar, pues si este lo supera implica que, o bien un producto se rompió con el peso de todos los otros productos por encima de el, o el tubo mismo se rompió. En caso de que eso suceda, podemos afirmar que cualquier solución que se extienda a partir de esta será una no válida, y por lo tanto, no vale la pena seguir explorando el árbol de backtracking. Esta es la motivación para la poda por factibilidad de este algoritmo.
+
+La implementación de esta poda se puede observar en el Algoritmo~\ref{alg:backtracking}. La idea de la implementación es ir actualizando el valor de $r$, la \emph{resistencia mínima parcial} en cada llamado recursivo del algoritmo, dependiendo si se agrega o no un producto. Esto se puede observar en la línea~\ref{linea:fact_actualizar}. Para verificar la factibilidad de la solución parcial que estamos actualmente explorando, se realiza la comparación en la línea~\ref{linea:fact}. En caso de ser una solución no factible, el llamado recursivo retorna $-\infty$, asegurándose de esta manera que siempre se opte por alguna otra rama.
+
+\paragraph{Poda por optimalidad}
+Sea $v \in \Rn{m}$ la codificación de una solución parcial. Luego, podemos calcular el cardinal de la solución parcial como
+\[
+    c = \sum_{i = 1}^{m}{a_{i}}.
+\]
+
+Por otra lado, la cantidad de productos que quedan por considerar es $n - m$. Podemos concluir entonces que la cantidad máxima de productos que puede tener cualquier extensión de nuestra solución parcial es $c + (n - m)$. Supongamos entonces que $max$ es el cardinal de alguna solución candidata ue ya hemos explorado, luego, si $c + (n - m) \leq max$, esta solución parcial, aunque se extienda de forma tal de incluir a todos los productos restantes, no podrá ser una solución óptima. Por lo tanto, no tiene sentido recorrer el subárbol producto de extender esta solución particular. Esta es la poda por optimalidad que consideramos para este algoritmo. La manera de implementar esta poda consiste en que la variable $c$ (llamada $count$ en el Algoritmo~\ref{alg:backtracking}) se vaya incrementando a medida que agregamos un producto a la solución particular, y en caso de ser mayor a la variable $max$, que esta última se actualice con el valor de $c$, como se puede ver en la línea~\ref{linea:opt_actualizar}. Por último, la poda se realiza en la línea~\ref{linea:opt}.
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\State $max \gets -1$
+\Function{jt\_bt}{$i$, $r$, $count$, $s_{k}$}
+    \IfThen{$r<0$} {\textbf{return} $-\infty$ \label{linea:fact}} 
+    \IfThen{$i=N$} {\textbf{return} $0$}
+    \State $restantes \gets N - i$
+    \IfThen{$count + restantes \leq max$} {\textbf{return} $-\infty$} \label{linea:opt}
+    \IfThen{$count > max$} {$max \gets count$ \label{linea:opt_actualizar}}
+    \State $min \gets \min(r - w_i, r_i)$ \label{linea:fact_actualizar}
+    \State \textbf{return} $\max(1 + \textsc{jt\_bt}(i+1, min, count+1, s_{k}),\ \textsc{jt\_bt}(i+1, r, count, s_{k}))$
+\EndFunction
+\end{algorithmic}
+\caption{Optimizando Jambo-tubo por Backtracking.}
+\label{alg:backtracking}
+\end{algorithm}
+
+La complejidad del algoritmo en el peor caso es $O(2^n)$. Esto es así, porque en el peor escenario no se logra podar ninguna rama y por lo tanto se termina enumerando el árbol completo al igual que en el algoritmo de Fuerza Bruta. Además, se puede observar que el código introducido en las líneas \ref{linea:opt_actualizar}, \ref{linea:fact} y \ref{linea:opt} solamente agrega un número constante de operaciones. Existe una familia de instancias para las cuales este algoritmo va a enumerar todo el árbol. Por ejemplo,
+\[
+    s_{k}=(1,n), \hdots, (1,n).
+\]
+Con $\Res \geq n$. En este caso, cualquier subsucesión de $\curl{s_{k}}$ representa una solución válida, dado que la suma de los pesos de todos los productos no es mayor a la resistencia del tubo ni de ningún producto. Por lo tanto no se puede aplicar en ningún momento la poda por factibilidad, resultando esto en una $2^{n}$ llamados recursivos. Notar que en la práctica el orden de los llamados recursivos determina si aplica o no una poda por optimalidad, dado que, se podría recorrer primero una rama que resulte en una solución óptima. En este caso, estamos considerando que los llamados recursivos se hacen simultáneamente y por ello, salvo una poda factibilidad, se está recorriendo el mismo nivel del árbol de backtracking para todo llamado recursivo.
+En cambio, el mejor caso se produce cuando el cardinal de la solución óptima es 0, esto es, no se puede agregar ningún producto sin que se supere la resistencia del tubo. En este caso, podemos observar que solo se enumeraran $O(n)$ nodos. Esto es gracias a la poda por factibilidad que corta en la siguiente iteración al ver que la resistencia del tubo es menor a 0. Un representante de esta familia de instancias es
+\[
+    s_{k} = (\Res+1, \Res), \hdots, (\Res + 1, \Res).
+\]
+
+\section{Programación Dinámica} \label{sec:dp}
+Los algoritmos de \emph{Programación Dinámica} entran en juego cuando un problema recursivo tiene superposición de subproblemas. La idea es sencilla y consiste en evitar recalcular todo el subárbol correspondiente si ya fue hecho con anterioridad. En este caso, definimos la siguiente función recursiva que resuelve el problema:
+\begin{equation} \label{eq:dp}
+    f(i, m) = \begin{cases}
+        -\infty & \text{si } m < 0,\\
+        0 & \text{si } m\geq 0 \land i = n+1,\\
+        \max \{ 1 + f(i+1, m - w_i),\ f(i+1, m) \} & \text{si } m - w_i < r_i,\\
+        \max \{ 1 + f(i+1, r_i),\ f(i+1, m) \} & \text{caso contrario. }
+    \end{cases}
+\end{equation}
+Coloquialmente, podemos definir $f(i, m)$ como el máximo cardinal de una subsucesión ${\curl{s_{k_{r}}} \subseteq \curl{s_{k}}}$ que considere únicamente los últimos $i$ productos de $\curl{s_{k}}$, tal que la suma de los ${w_{j} \in \curl{s_{k_{r}}}}$ es a lo sumo $m$. Más formalmente, queremos estudiar lo que pasa con el sufijo de la sucesión $\sqe{s}{k}{1}{n}$, que es exáctamente la sucesión $\sqe{s}{k}{i}{n}$. Por simplicidad lo notaremos $\curl{s_{k}}_{i}$. Veamos que la recursión es efectivamente lo que dice su definición coloquial.
+%\[
+%    \bigg\{\inN{\#S^{'}} \quad \text{tal que} \quad S^{'}\subseteq S^{i},  %\sum_{s_{j} \in S'}{w_{j}} \leq m \bigg\}.
+%\]
+
+\paragraph{Correctitud}
+\begin{enumerate}
+    \item[(i)] {Si $m < 0$ entonces ningún subconjunto va a tener una suma menor o igual a m ya que todos los pesos $w_j$ son enteros positivos, por lo tanto la respuesta  $f(i, m) = -\infty$.}
+    \item[(ii)] {Si $i = n+1$ y $m \geq 0$, entonces $\curl{s_{k}}_{i}$ es la sucesión vacía, y por lo tanto cualquier subsucesión tiene cardinal igual a 0, por lo tanto $f(i, m) = 0$.}
+    \item[(iii)] { En este caso, $i \leq n$ y $m \geq 0$, por lo tanto estamos buscando la subsucesión de $\curl{s_{k}}_{i}$ de mayor cardinal que sume a lo sumo $m$. Dicha subsucesión tiene que, o bien tener al $i$-ésimo producto o no tenerlo. Si no lo tiene entonces tiene que ser a su vez una subsucesión de $\curl{s_{k}}_{i+1}$ y no exceder $m$, por ende, debe hallarse de manera recursiva $f(i+1, m)$. Si tiene al $i$-ésimo elemento, entonces los $w_j$ del resto de la solución deben sumar a lo sumo $m'$, utilizando elementos de $\curl{s_{k}}_{i+1}$, y debe ser la de máximo cardinal entre todas ellas. Esto es precisamente $f(i+1, m')$. A cada paso, el valor de $m'$ se actualiza según el siguiente criterio:
+    \begin{enumerate}
+       \item {si $m - w_i < r_i$ quiere decir que la resistencia más débil que no debemos quebrantar es la misma que en el paso anterior menos el peso del producto agregado, es decir que $m' = m-w_i$. Por lo tanto la solución es $\max \{ 1 + f(i+1, m - w_i),\ f(i+1, m) \}$}.
+       \item {Por el contrario, si $m - w_i \geq r_i$ entonces la resistencia más frágil es la del producto que acabamos de agregar. Por consiguiente, $m' = r_i$ y así la solución se configura como $\max \{ 1 + f(i+1, r_i),\ f(i+1, m) \}$. }
+    \end{enumerate} 
+    Notar que al término de la izquierda se le suma 1 por haber seleccionado al $i$-ésimo elemento. }
+\end{enumerate}
+
+\paragraph{Memoización}
+Notemos que la función recursiva (\ref{eq:dp}) toma dos parámetros $i \in [1, \hdots, n]$ y $m \in [0, \hdots, R]$. Notar que los casos $i = n+1$ o $m < 0$ son casos base y se pueden resolver de manera ad-hoc en tiempo constante. Por lo tanto, la cantidad de posibles \emph{estados} con la que se puede llamar a la función, o combinación de parámetros, está determinada por la combinación de ellos. En este caso, hay $\Theta(n \cdot \Res)$ combinaciones posibles de parámetros. En este sentido, si agregamos una memoria que recuerde cuando un caso ya fue resuelto y su correspondiente resultado, podemos calcular una sola vez cada uno de ellos y asegurarnos no resolver más de $\Theta(n \cdot \Res)$ casos. El Algoritmo~\ref{alg:dp} muestra esta idea aplicada a la función (\ref{eq:dp}). En la línea~\ref{linea:memoizacion} se lleva a cabo el paso de memoización que solamente se ejecuta si el estado no había sido previamente computado.
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\State $M_{im} \gets \bot$ for $i \in [1, n], m \in [0, R]$.
+\Function{jt\_dp}{$i$, $m$}
+    \IfThen{$m<0$}{\textbf{return} $-\infty$}
+    \If{$M_{im} = \bot$}
+        \IfThenElse{$i=n+1$}{$M_{im} \gets 0$}{
+            \State \qquad $min \gets \min \{m-w_{i},\ r_{i}\}$
+            \State \qquad $M_{im} \gets \max \{ 1 + \textsc{jt\_dp}(i+1,min),\ \textsc{jt\_dp}(i+1,m)\}$
+        } \label{linea:memoizacion}
+    \EndIf
+    \State \textbf{return} $M_{im}$
+\EndFunction
+\end{algorithmic}
+\caption{Optimizando Jambo-tubo por Programación Dinámica}
+\label{alg:dp}
+\end{algorithm}
+
+La complejidad del algoritmo entonces está determinada por la cantidad de estados que se resuelven y el costo de resolver cada uno de ellos. Como mencionamos previamente, a lo sumo se resuelven $O(n \cdot \Res)$ estados distintos, y como todas las líneas del Algoritmo~\ref{alg:dp} realizan operaciones constantes entonces cada estado se resuelve en $O(1)$. Como resultado, el algoritmo tiene complejidad $O(n \cdot \Res)$ en el peor caso. Es importante observar que el diccionario $M$ se puede implementar como una matriz con acceso y escritura constante. Más aún, notar que su inicialización tiene costo $\Theta(n \cdot R)$, por lo tanto, el mejor y peor caso de nuestro algoritmo va a tener costo $\Theta(n \cdot \Res)$.
+
+\section{Experimentación} \label{sec:experimentacion}
+En esta sección se intentará evaluar y mostrar las fortalezas y debilidades de las diferentes técnicas algorítmicas presentadas en las secciones anteriores comparándolas contra distintas instancias. Para las ejecuciones de los experimentos se utilizó el lenguaje de programación \emph{C++}, y estas se realizaron en una computadora con CPU AMD(R) FX(TM) 6100 @ 3.3 GHz
+y 8 GB de memoria RAM.
+
+\subsection{Métodos}
+Las configuraciones y métodos utilizados durante la experimentación son los siguientes:
+\begin{itemize}
+    \setlength{\itemsep}{1pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{FB}: Algoritmo~\ref{alg:fuerza_bruta} de Fuerza Bruta de la Sección~\ref{sec:fuerza_bruta}.
+    \item \textbf{BT}: Algoritmo~\ref{alg:backtracking} de Backtracking de la Sección~\ref{sec:backtracking}.
+    \item \textbf{BT-F}: Algoritmo~\ref{alg:backtracking} con excepción de la línea~\ref{linea:opt}, es decir, solamente aplicando podas por factibilidad.
+    \item \textbf{BT-O}: Similar al método BT-F pero solamente aplicando podas por optimalidad, o sea, descartando la línea~\ref{linea:fact} del Algoritmo~\ref{alg:backtracking}.
+    \item \textbf{DP}: Algoritmo~\ref{alg:dp} de Programación Dinámica de la Sección~\ref{sec:dp}.
+\end{itemize}
+
+\subsection{Instancias}
+Para evaluar los algoritmos en distintos escenarios es preciso definir familias de instancias conformadas con distintas características. Por ejemplo, el algoritmo de Backtracking como se menciona en la Sección~\ref{sec:backtracking} tiene familias que producen mejores y peores casos para el algoritmo. Los \emph{datasets} definidos se enumeran a continuación.
+
+\begin{itemize}
+    \setlength{\itemsep}{1pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{fuerza-bruta}: Los tamaños de las instancias de este dataset varían entre 1 y 30. Para una instancia de $n$ elementos, la resistencia del tubo es $\Res = n$, y la sucesión de productos $\sqe{s}{k}{1}{n}$ está definida como
+    \[
+        s_{k} = (1, \Res) \quad k=1, \hdots, n.
+    \]
+    \item \textbf{bt-mejor-caso}: Las instancias varían entre 1 y 30 elementos. Para una instancia de $n$ elementos, la sucesión de productos $\sqe{s}{k}{1}{n}$ está definida como
+    \[
+        s_{k} = (\Res + 1, \Res) \qquad k=1, \hdots, n.
+    \]
+    Esta es una familia de instancias donde se exhibe el mejor caso para la técnica de Backtracking vista en la Sección~\ref{sec:backtracking}. En este caso, la resistencia del tubo es $\Res = 100$. 
+    \item \textbf{bt-peor-caso}: Las instancias varían entre 1 y 30 elementos. Para una instancia de $n$ elementos con $\Res \gg n$, la sucesión de productos $\sqe{s}{k}{1}{n}$ está definida como
+    \[
+        s_{k} = (1, \Res) \qquad k=1, \hdots, n.
+    \]
+    Estas son algunas de las instancias donde la técnica de Backtracking, vista en la Sección ~\ref{sec:backtracking}, exhibe el peor caso de Backtracking.
+    \item \textbf{sin-superposición}: Las instancias varían entre 1 y 20 elementos, $\Res= 2^n-1$ y la sucesión de productos $\sqe{s}{k}{1}{n}$ está dada por 
+    \[
+        s_{k} = (2^k, \Res) \qquad k=1, \hdots, n.
+    \]
+    Al construir las instancias de esta manera, garantizamos que nunca se llame al algoritmo de manera recursiva con los mismos parámetros más de una vez.
+    
+    \item \textbf{alta-superposición}: El tamaño de las instancias varía entre 1 y 20 elementos. Para una instancia de tamaño $n$, su resistencia está definida como $\Res = \max(1, \floor{\frac{n(n+1)}{4}})$. Así mismo, la sucesión de productos $\sqe{s}{k}{1}{n}$ esta dada por
+    \[
+        s_{k} = (k, \Res) \qquad k=1, \hdots, n.
+    \]
+    De esta manera nos aseguramos que para cada $0 \leq r \leq \Res$, hay muchas subsucesiones $\sqe{s}{k_{r}}{1}{n_{k}}$ tales que
+    \[
+        \sum_{s_{k_{i}}\in \curl{s_{k_{r}}}}{w_{k_{i}}} = r.
+    \]
+    \item \textbf{muchos-productos}: El tamaño de las instancias varían en el intervalo $[100, 1000]$ y su resistencia está dada por $\Res = \floor{\frac{n(n+1)}{4}}$, donde $n$ es el tamaño de la instancia. Así mismo, la sucesión de productos $\sqe{s}{k}{1}{n}$ esta dada por
+    \[
+        s_{k} = (k, \Res) \qquad k=1, \hdots, n.
+    \]
+\end{itemize}
+
+\subsection{Experimento: Complejidad de Fuerza Bruta}
+En este experimento se busca analizar los tiempos de ejecución del algoritmo de \fb{} y compararlos con la complejidad teórica del mismo vista en la Sección~\ref{sec:fuerza_bruta}. Para este experimento utilizaremos el dataset \dfb{}. Esperamos que este experimento respalde empíricamente las lo señalado en la demostración de la complejidad teórica de este algoritmo en la Sección~\ref{sec:fuerza_bruta}: principalmente que los tiempos de ejecución del algoritmo son exponenciales en $n$. Una observación que vale la pena mencionar es que, como vimos en la Sección~\ref{sec:fuerza_bruta}, toda instancia exhibe el \emph{peor caso} del algoritmo, y por lo tanto la construcción de las instancias utilizadas no son de particular interés.
+
+La Figura~\ref{fig:fb-complejidad} muestra los resultados del experimento. En la Figura~\ref{fig:fb-complejidad-a} se puede observar que los tiempos de ejecución siguen un carácter exponencial en el tamaño de la instancia, $n$. Más sobre este punto, de la Figura \ref{fig:fb-complejidad-b} podemos ver que los tiempos de ejecución del algoritmo para todos los tamaños de instancias se correlacionan fuertemente (0.99996) con la complejidad teórica vista en la Sección~\ref{sec:fuerza_bruta}, en particular que esta es del orden de $O(2^{n})$. Estos resultados confirman nuestra hipótesis.
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/FB}
+        \caption{Tiempos de ejecución FB}
+        \label{fig:fb-complejidad-a}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/FB_corr}
+        \caption{Comparación con $O(2^{n})$, Pearson: 0.99996}
+        \label{fig:fb-complejidad-b}
+    \end{subfigure}
+    \caption{Análisis de complejidad del método FB.}
+    \label{fig:fb-complejidad}
+\end{figure}
+
+\subsection{Experimento: Complejidad de Backtracking}
+En esta experimentación vamos a contrastar las hipótesis de la Sección~\ref{sec:backtracking} con respecto a las familias de instancias de mejor y peor caso para el Algoritmo~\ref{alg:backtracking}, y su respectiva complejidad. Para esto evaluamos el método \textbf{BT} con respecto los datasets \textbf{bt-mejor-caso} y \textbf{bt-peor-caso}.
+
+\begin{figure}[!ht]
+    \centering
+    \includesvg[width=\textwidth]{img/BT_tiempos_dos_datasets}
+    \caption{Comparación del tiempo de ejecución de mejor y peor caso}
+    \label{fig:bt-complejidad-mejor-peor}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/BT_mejor-caso-bt}
+        \caption{Tiempos de ejecución mejor caso BT}
+        \label{fig:bt-complejidad-mejor}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/BT_mejor-caso-bt_corr}
+        \caption{Comparación con $O(n)$, Pearson: 0.7583}
+        \label{fig:bt-corr-mejor}
+    \end{subfigure}
+    \caption{Análisis de complejidad del método BT para los dataset bt-mejor-caso}
+    \label{fig:bt-complejidad-mejor-caso}
+\end{figure}
+
+En primer lugar, la Figura \ref{fig:bt-complejidad-mejor-peor} exhibe la diferencia de tiempos de ejecución entre los datasets \textbf{bt-peor-caso} y \textbf{bt-mejor-caso}.
+
+Entrando más en detalle, las Figuras \ref{fig:bt-complejidad-mejor-caso} y \ref{fig:bt-complejidad-peor-caso} muestran los gráficos de tiempo de ejecución y de correlación del método \textbf{BT} para cada dataset respectivamente.
+
+Estudiando el dataset \textbf{bt-mejor-caso} podemos observar que existe una correlación positiva (0.7583) entre los tiempos de ejecución y la complejidad teórica (lineal en $n$), pero esta no es tan marcada como hubiésemos esperado. Así mismo, al analizar los resultados del dataset \textbf{bt-peor-caso}, también podemos ver que este exhibe una correlación positiva con la complejidad teórica (0.8052), pero tampoco es tan alta como hubiésemos esperado. En la Figura~\ref{fig:bt-complejidad-peor} podemos notar las diferencias entre los tiempos de ejecución y una curva exponencial en $n$. Se puede observar que para la mayoría de instancias, el tiempo de ejecución resultó mayor al esperado.
+
+En ambos casos, los experimentos presentaron un menor grado de confianza con la complejidad teórica del que esperábamos. Esto pudo deberse a ruido presente a la hora de medir los tiempos de ejecución. Una posible manera de mitigar esto a futuro es realizar más mediciones para una determinada instancia, y remover \emph{outliers} en las muestras.
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/BT_peor-caso-bt}
+        \caption{Tiempos de ejecución peor caso BT}
+        \label{fig:bt-complejidad-peor}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/BT_peor-caso-bt_corr}
+        \caption{Comparación con $O(2^{n})$, Pearson: 0.8052}
+        \label{fig:bt-corr-peor}
+    \end{subfigure}
+    \caption{Análisis de complejidad del método BT para el dataset bt-peor-caso.}
+    \label{fig:bt-complejidad-peor-caso}
+\end{figure}
+
+\subsection{Experimento: Complejidad de Programación Dinámica}
+Para este experimento se quiere analizar la eficiencia del algoritmo de \pd{} para un dataset determinado, y también ver su correlación con la cota teórica vista en la Sección~\ref{sec:dp}. Para esto, mediremos los tiempos de ejecución del método \textbf{DP} sobre el dataset \textbf{muchos-productos}.
+
+En la Figura~\ref{fig:dp} se exhibe el crecimiento del tiempo de ejecución del algoritmo comparado con una curva del orden de $O(n \cdot \Res)$. Podemos observar que la muestra adopta un comportamiento muy similar al de la curva. Más aún, en la Figura~\ref{fig:dp-corr} puede verse la fuerte correlación (0.996) entre los tiempos de ejecución y la complejidad teórica. Estos resultados confirman nuestra hipótesis.
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/PD}
+        \caption{Tiempos de ejecución PD.}
+        \label{fig:dp}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/PD_corr}
+        \caption{Comparación con $O(n \cdot \Res)$, Pearson: 0.996}
+        \label{fig:dp-corr}
+    \end{subfigure}
+    \caption{Análisis del método DP sobre el dataset muchos-productos.}
+    \label{fig:dp-tiempos}
+\end{figure}
+
+\subsection{Experimento: Comparación Backtracking--Programación Dinámica}
+Para este experimento quisimos realizar una comparación entre dos técnicas algorítmicas que detallamos en secciones anteriores: Programación Dinámica y Backtracking. La motivación detrás de este experimento era poder tener un mejor entendimiento de, bajo qué instancias se comporta mejor una técnica por sobre la otra. Notemos que, no basta con saber la complejidad teórica de los algoritmos desarrollados con estas técnicas para determinar cuál tendrá menor tiempo de ejecución. Esto se debe a que ellas no dependen de los mismos factores, por ejemplo, por lo visto en las Secciones~\ref{alg:dp} y \ref{alg:backtracking}, la complejidad teórica del algoritmo de Programación Dinámica es del orden de $O(n \cdot \Res)$, mientras que la del algoritmo de Backtracking del orden de $O(2^{n})$. Por lo tanto, dependiendo del valor de $\Res$, podría llegar a pasar que la complejidad del algoritmo de Programación Dinámica supere el orden exponencial del algoritmo de Backtracking.
+
+Nuestra hipótesis es que para instancias donde $\Res$ y los valores que tome la resistencia mínima parcial varíe mucho dentro de un intervalo grande, el algoritmo de Backtracking presentará una ventaja frente al de Programación Dinámica debido al alto costo de mantenimiento de la estructura de memoización de este último y la efectividad de las podas del primero. Por el otro lado, para instancias donde $\Res$ y los valores que tome la resistencia mínima parcial se mantengan acotados dentro de intervalo reducido, el beneficio de tener almacenados resultados a subproblemas se verá reflejado en los tiempos de ejecución.
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/PD_BT_alta_tiempos}
+        \caption{Dataset alta-superposicion.}
+        \label{fig:comparacion-bt-dp-alta}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includesvg[width=\textwidth]{img/PD_BT_sin_tiempos}
+        \caption{Dataset sin-superposicion.}
+        \label{fig:comparacion-bt-dp-baja}
+    \end{subfigure}
+    \caption{Comparación de tiempos de ejecución entre DP y BT.}
+    \label{fig:comparacion-bt-dp}
+\end{figure}
+
+La Figura~\ref{fig:comparacion-bt-dp} muestra los tiempos de ejecución de los algoritmos de \bt{} y \pd{} para los datasets \das{} y \dss{}. Podemos observar que en ambos casos la hipótesis se confirma: en primer lugar, en el dataset \das{} el algoritmo de \pd{} resulta más eficiente que el de \bt{}. Para la instancia con mayor productos de este dataset ($n = 20$), la resistencia resulta $\Res = 105$, y por lo tanto vale que la resistencia mínima parcial, $m$, es $0 \leq m \leq \Res$. Dado que los pesos de los productos de este dataset son todos los naturales hasta $n$, y $\Res$ es el promedio de la suma de todos los elementos, existen muchas maneras de sumar a lo sumo $\Res$. Por lo tanto, es esperable que muchos llamados recursivos coincidan, y esto es un factor determinante para determinar la efectividad de un algoritmo de \pd{}. Por el otro lado, también se confirma la hipótesis con respecto al dataset \dss{}. En este caso, se puede observar que el algoritmo de \bt{} es considerablemente más efectivo que el de \pd{}. La resistencia $\Res$ para la instancia de mayor tamaño de este dataset resulta $\Res = 2^{20}$, y más aún el dataset es tal que nunca se aprovecha el almacenamiento de resultados de subproblemas. Notar que para $\Res$ muy grande la complejidad espacial del algoritmo de \pd{} empieza a ser un factor a considerar a la hora de determinar qué algoritmo usar. Por ejemplo, en la instancia de mayor tamaño del dataset \dss{}, se requiere mantener una estructura de memoización de $20 \cdot 2^{20}$ entradas. Si suponemos que cada una de estas entradas ocupa 4 Bytes, el espacio que se necesita para la estructura de memoización es de 80 MB. Y si quisiéramos considerar 10 productos más que sigan el criterio de construcción del dataset \dss{}, el espacio requerido pasaría a ser de 120 GB.
+
+\section{Conclusiones} \label{sec:conclusiones}
+En este trabajo se muestran tres algoritmos que usan técnicas distintas para resolver el problema de Jambo-Tubos. El algoritmo de Fuerza Bruta resulta poco eficiente para resolver este problema ya que al aumentar su tiempo de ejecución aumenta exponencialmente con la cantidad de elementos de $\curl{s_{k}}$. Por este motivo, no resulta una elección recomendable para instancias que superen los 30 productos. Por otro lado, el algoritmo de Backtracking viene a mitigar las falencias del algoritmo anteriormente mencionado. Este introduce las podas por factibilidad y optimalidad, que en casos promedios mejoran las eficiencia del algoritmo considerablemente. En el mejor de los casos, el algoritmo presenta un tiempo de ejecución lineal en la cantidad de productos de la instancia. No obstante, el algoritmo no puede dar ninguna garantía en el análisis teórico, ya que para ciertas instancias el tiempo de ejecución del algoritmo es similar al de \fb{}. Por último, tenemos el algoritmo de \pd{} que con el proceso de \emph{memoización} busca evitar el cálculo de subproblemas que ya se han resuelto previamente. Este algoritmo permite considerar instancias de gran tamaño y resolverlas con una complejidad no exponencial en la cantidad de productos. Las desventajas de este algoritmo son que la complejidad depende de la resistencia $\Res$ del Jambo-Tubo, y si esta es muy grande podría superar los tiempos de ejecución del algoritmo de \bt{}. La otra desventaja con este algoritmo es el mantenimiento y la complejidad espacial que implica la estructura de \emph{memoización}.
+
+Un área donde se podría profundizar a futuro es el impacto que el orden de cómputo de los llamados recursivos tiene frente al tiempo de ejecución del algoritmo de \bt{}. Así mismo, sería interesante investigar acerca de instancias, si existieren, donde el algoritmo de \fb{} presente mejoras en cuanto a su eficiencia por sobre el de \bt{}.
+\end{document}
