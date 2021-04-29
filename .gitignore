@@ -1,11 +1,11 @@
 obj/
+tp1/jt
 
-src/input/*
-!src/input/ejemplo
-src/jt
+tp1/exp/img
+tp1/exp/instancias/
+tp1/exp/resultados.csv
 
-exp/instancias/*
-exp/resultados/*
-exp/.ipynb_checkpoints
+.ipynb_checkpoints
+.vscode
 
 tp1_ejemplo/
